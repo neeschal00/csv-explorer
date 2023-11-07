@@ -51,6 +51,30 @@ class Dataset:
         --------------------
         -> None
         """
+
+        if self.is_df_none():
+            # Check if self.df is empty or None
+            return
+
+        # Set the list of column names
+        self.set_columns()
+
+        # Set the dimensions (number of rows and columns)
+        self.set_dimensions()
+
+        # Set the number of duplicated rows
+        self.set_duplicates()
+
+        # Set the number of missing values
+        self.set_missing()
+
+        # Set the number of numeric and text columns
+        self.set_numeric()
+        self.set_text()
+
+        # Set the data table with column names, data types, and memory usage
+        self.set_table()
+
         
         
     def set_df(self):
@@ -71,6 +95,26 @@ class Dataset:
         -> None
 
         """
+
+        if self.is_df_none():
+            try:
+                # Load the CSV file into a Pandas DataFrame
+                self.df = pd.read_csv(self.file_path)
+
+                # Check if the DataFrame has been successfully loaded
+                if not self.is_df_none():
+                    # If loaded successfully, update other attributes as well
+                    self.set_columns()
+                    self.set_dimensions()
+                    self.set_duplicates()
+                    self.set_missing()
+                    self.set_numeric()
+                    self.set_text()
+                    self.set_table()
+            except Exception as e:
+                # Handle any potential errors when loading the CSV file
+                print(f"Error loading CSV file: {str(e)}")
+
         
 
     def is_df_none(self):
@@ -91,6 +135,11 @@ class Dataset:
         -> (bool): Flag stating if self.df is empty or not
 
         """
+        if self.df.empty:
+            return True
+        if self.df is None:
+            return True
+        return False
         
 
     def set_columns(self):
@@ -111,6 +160,8 @@ class Dataset:
         -> None
 
         """
+        if not self.is_df_none():
+            self.cols_list = self.df.columns.tolist() 
         
 
     def set_dimensions(self):
@@ -131,7 +182,8 @@ class Dataset:
         -> None
 
         """
-        
+        if not self.is_df_none():
+            self.n_rows, self.n_cols = self.df.shape
 
     def set_duplicates(self):
         """
@@ -151,6 +203,8 @@ class Dataset:
         -> None
 
         """
+        if not self.is_df_none():
+            self.n_duplicates = self.df.duplicated().sum()
         
 
     def set_missing(self):
@@ -171,6 +225,10 @@ class Dataset:
         -> None
 
         """
+        if not self.is_df_none():
+            #doubt
+            self.n_missing = self.df.isnull().sum().sum() 
+
         
 
     def set_numeric(self):
