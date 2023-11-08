@@ -61,8 +61,32 @@ class Dataset:
             self.set_text()
             self.set_table()
 
-        
-        
+    
+    def set_df(self):
+        """
+        --------------------
+        Description
+        --------------------
+        -> set_df (method): Class method that will load the uploaded CSV file as a Pandas DataFrame and store it as an attribute (self.df) if it hasn't been provided before.
+
+        --------------------
+        Parameters
+        --------------------
+        -> None
+
+        --------------------
+        Returns
+        --------------------
+        -> None
+        """
+        if self.df is None:
+            # Load the CSV file as a Pandas DataFrame
+            try:
+                self.df = pd.read_csv(self.file_path)
+            except UnicodeDecodeError:
+                self.df = pd.read_csv(self.file_path,encoding = "ISO-8859-1")
+
+
     def is_df_none(self):
         """
         --------------------
@@ -312,16 +336,26 @@ class Dataset:
         -> None
 
         """
-
         if not self.is_df_none():
+            # Check for missing values
+
+
+            # Check data types
             data_types = self.df.dtypes
-            memory_usage = self.df.memory_usage(deep=True) #for more accurate estimate
+            print(data_types)
+            print("length of arr is :"+ str(len(data_types)))
+            mem_usage = self.df.memory_usage(deep=True)
+            mem_usage = mem_usage[mem_usage.index.isin(data_types.index)]
+            print(mem_usage)
+            print("length of arr is :"+ str(len(mem_usage)))
+            # Create the table DataFrame
             self.table = pd.DataFrame({
                 'Column Name': data_types.index,
                 'Data Type': data_types.values,
-                'Memory Usage': memory_usage.values
+                'Memory Usage': mem_usage.values
             })
 
+            print(self.table)
 
     def get_summary(self):
         """

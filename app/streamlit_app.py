@@ -40,16 +40,31 @@ st.title("CSV Explorer")
 
 # Add Window to upload CSV file
 with st.expander("ℹ️ - Streamlit application for performing data exploration on a CSV", expanded=True):
-    st.session_state.file_path = st.file_uploader("Choose a CSV file")
+    uploaded_file = st.file_uploader("Choose a CSV file")
+    # st.session_state.file_path = st.file_uploader("Choose a CSV file")
+    # print(st.session_state.file_path)
+
 
 # If a CSV file is uploaded, display the different tabs
-if st.session_state.file_path is not None:
+if uploaded_file is not None:
+    filename = uploaded_file.name
+    # Construct the file path in the "csv" directory
+    file_path = os.path.join("csv", filename)
+
+    # Save the uploaded file to the "csv" directory
+    with open(file_path, "wb") as f:
+        f.write(uploaded_file.read())
+
     tab_df, tab_num, tab_text, tab_date = st.tabs(["DataFrame", "Numeric Serie", "Text Serie", "Datetime Serie"])
+    st.session_state.file_path = file_path
     with tab_df:
         display_tab_df_content(file_path=st.session_state.file_path)
     with tab_num:
+        # st.session_state.dataset = {'df': pd.read_csv(st.session_state.file_path)}
         display_tab_num_content(df=st.session_state.dataset.df)
     with tab_text:
+        # st.session_state.dataset = {'df': pd.read_csv(st.session_state.file_path)}
         display_tab_text_content(df=st.session_state.dataset.df)
     with tab_date:
+        # st.session_state.dataset = {'df': pd.read_csv(st.session_state.file_path)}
         display_tab_date_content(df=st.session_state.dataset.df)
