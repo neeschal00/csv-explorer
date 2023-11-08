@@ -27,4 +27,26 @@ def display_tab_num_content(file_path=None, df=None):
     -> None
 
     """
-    
+    numeric_col = NumericColumn(file_path=file_path, df=df)
+
+    # Call the find_num_cols method
+    numeric_col.find_num_cols()
+
+    # Create a Streamlit select box with the list of numeric columns found
+    selected_col = st.selectbox("Select a numeric column", numeric_col.cols_list)
+
+    if selected_col:
+        # Call the set_data method to compute information for the selected column
+        numeric_col.set_data(selected_col)
+
+        # Create an expander container to display the computed information
+        with st.expander("Numeric Column Information"):
+            # Display the summary data as a Streamlit Table
+            st.table(numeric_col.get_summary())
+
+            # Display the histogram using Streamlit's altair_chart
+            st.altair_chart(numeric_col.histogram, use_container_width=True)
+
+            # Display the frequent values using Streamlit's write
+            st.write("Frequent Values:")
+            st.write(numeric_col.frequent)

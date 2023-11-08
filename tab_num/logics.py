@@ -65,6 +65,13 @@ class NumericColumn:
         -> None
 
         """
+        if self.df is None and self.file_path is not None:
+            
+            self.df = pd.read_csv(self.file_path)
+
+        if self.df is not None:
+            
+            self.cols_list = self.df.select_dtypes(include=['number']).columns.tolist()
         
 
     def set_data(self, col_name):
@@ -86,6 +93,33 @@ class NumericColumn:
 
         """
 
+        if col_name in self.cols_list:
+            # Set the self.serie attribute with the relevant column from the DataFrame
+            self.serie = self.df[col_name]
+
+            # Check if self.serie is empty or None
+            if not self.is_serie_none():
+                # Compute and set various statistics and attributes
+                self.set_unique()
+                self.set_missing()
+                self.set_mean()
+                self.set_std()
+                self.set_min()
+                self.set_max()
+                self.set_median()
+                self.set_zeros()
+                self.set_negatives()
+                self.set_histogram()
+                self.set_frequent()
+        else:
+            raise ValueError(f"Column '{col_name}' is not numeric or doesn't exist in the DataFrame.")
+
+
+
+
+
+
+
     def convert_serie_to_num(self):
         """
         --------------------
@@ -104,6 +138,14 @@ class NumericColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            try:
+                # Convert the Pandas Series to a numeric data type
+                self.serie = pd.to_numeric(self.serie, errors='coerce')
+            except ValueError:
+                # Handle any conversion errors
+                # You can add error handling logic here, e.g., logging
+                pass
         
 
     def is_serie_none(self):
@@ -124,6 +166,11 @@ class NumericColumn:
         -> (bool): Flag stating if the serie is empty or not
 
         """
+        if self.serie is None or self.serie.empty:
+            self.serie_empty = True
+        else:
+            self.serie_empty = False
+        return self.serie_empty
         
 
     def set_unique(self):
@@ -144,6 +191,9 @@ class NumericColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            # Compute the number of unique values in the series
+            self.n_unique = len(self.serie.unique())
         
 
     def set_missing(self):
@@ -164,6 +214,9 @@ class NumericColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            # Compute the number of missing values (NaN) in the series
+            self.n_missing = self.serie.isna().sum()
         
 
     def set_zeros(self):
@@ -184,7 +237,9 @@ class NumericColumn:
         -> None
 
         """
-        
+        if not self.is_serie_none():
+            # Compute the number of times the series has values equal to 0
+            self.n_zeros = (self.serie == 0).sum()
 
     def set_negatives(self):
         """
@@ -204,6 +259,9 @@ class NumericColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            # Compute the number of times the series has negative values
+            self.n_negatives = (self.serie < 0).sum()
         
 
     def set_mean(self):
@@ -224,6 +282,9 @@ class NumericColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            # Compute the mean of the series
+            self.col_mean = self.serie.mean()
         
 
     def set_std(self):
@@ -244,6 +305,9 @@ class NumericColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            # Compute the standard deviation of the series
+            self.col_std = self.serie.std()
         
     
     def set_min(self):
@@ -264,6 +328,9 @@ class NumericColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            # Compute the minimum value of the series
+            self.col_min = self.serie.min()
         
 
     def set_max(self):
@@ -284,7 +351,9 @@ class NumericColumn:
         -> None
 
         """
-        
+        if not self.is_serie_none():
+            # Compute the maximum value of the series
+            self.col_max = self.serie.max()
 
     def set_median(self):
         """
@@ -304,7 +373,9 @@ class NumericColumn:
         -> None
 
         """
-        
+        if not self.is_serie_none():
+            # Compute the median value of the series
+            self.col_median = self.serie.median()
 
     def set_histogram(self):
         """
@@ -324,6 +395,16 @@ class NumericColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            # Create an Altair histogram
+            chart = alt.Chart(self.df)
+            chart = chart.mark_bar().encode(
+                alt.X(f'{self.serie.name}:O', bin=alt.Bin(maxbins=20), title=self.serie.name),
+                alt.Y('count()', title='Count')
+            )
+            
+            # Store the histogram in the self.histogram attribute
+            self.histogram = chart
         
 
     def set_frequent(self, end=20):
@@ -345,6 +426,17 @@ class NumericColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            # Compute the most frequent values and their occurrences
+            frequent_values = self.serie.value_counts().head(end).reset_index()
+            frequent_values.columns = ['value', 'occurrence']
+            
+            # Calculate the percentage
+            total_occurrences = self.serie.count()
+            frequent_values['percentage'] = (frequent_values['occurrence'] / total_occurrences) * 100
+            
+            # Store the DataFrame in the self.frequent attribute
+            self.frequent = frequent_values
         
     def get_summary(self,):
         """
@@ -364,4 +456,32 @@ class NumericColumn:
         -> (pd.DataFrame): Formatted dataframe to be displayed on the Streamlit app
 
         """
+        summary_data = {
+            "Description": [
+                "Number of Unique Values",
+                "Number of Missing Values",
+                "Average (Mean)",
+                "Standard Deviation",
+                "Minimum Value",
+                "Maximum Value",
+                "Median Value",
+                "Number of Zeros",
+                "Number of Negatives",
+            ],
+            "Value": [
+                self.n_unique if not self.is_serie_none() else "N/A",
+                self.n_missing if not self.is_serie_none() else "N/A",
+                self.col_mean if not self.is_serie_none() else "N/A",
+                self.col_std if not self.is_serie_none() else "N/A",
+                self.col_min if not self.is_serie_none() else "N/A",
+                self.col_max if not self.is_serie_none() else "N/A",
+                self.col_median if not self.is_serie_none() else "N/A",
+                self.n_zeros if not self.is_serie_none() else "N/A",
+                self.n_negatives if not self.is_serie_none() else "N/A",
+            ],
+        }
+
+        # Create the summary DataFrame
+        summary_df = pd.DataFrame(summary_data)
         
+        return summary_df

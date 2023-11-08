@@ -61,10 +61,10 @@ if uploaded_file is not None:
         display_tab_df_content(file_path=st.session_state.file_path)
     with tab_num:
         # st.session_state.dataset = {'df': pd.read_csv(st.session_state.file_path)}
-        display_tab_num_content(df=st.session_state.dataset.df)
+        display_tab_num_content(file_path=st.session_state.file_path,df=st.session_state.dataset.df)
     with tab_text:
         # st.session_state.dataset = {'df': pd.read_csv(st.session_state.file_path)}
-        display_tab_text_content(df=st.session_state.dataset.df)
+        display_tab_text_content(st.session_state.file_path,df=st.session_state.dataset.df)
     with tab_date:
         # st.session_state.dataset = {'df': pd.read_csv(st.session_state.file_path)}
-        display_tab_date_content(df=st.session_state.dataset.df)
+        display_tab_date_content(st.session_state.file_path,df=st.session_state.dataset.df)
