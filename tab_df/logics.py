@@ -51,72 +51,18 @@ class Dataset:
         --------------------
         -> None
         """
-
-        if self.is_df_none():
-            # Check if self.df is empty or None
-            return
-
-        # Set the list of column names
-        self.set_columns()
-
-        # Set the dimensions (number of rows and columns)
-        self.set_dimensions()
-
-        # Set the number of duplicated rows
-        self.set_duplicates()
-
-        # Set the number of missing values
-        self.set_missing()
-
-        # Set the number of numeric and text columns
-        self.set_numeric()
-        self.set_text()
-
-        # Set the data table with column names, data types, and memory usage
-        self.set_table()
+        if not self.is_df_none():
+            # Update various attributes with relevant information
+            self.set_columns()
+            self.set_dimensions()
+            self.set_duplicates()
+            self.set_missing()
+            self.set_numeric()
+            self.set_text()
+            self.set_table()
 
         
         
-    def set_df(self):
-        """
-        --------------------
-        Description
-        --------------------
-        -> set_df (method): Class method that will load the uploaded CSV file as Pandas DataFrame and store it as attribute (self.df) if it hasn't been provided before.
-
-        --------------------
-        Parameters
-        --------------------
-        -> None
-
-        --------------------
-        Returns
-        --------------------
-        -> None
-
-        """
-
-        if self.is_df_none():
-            try:
-                # Load the CSV file into a Pandas DataFrame
-                self.df = pd.read_csv(self.file_path)
-
-                # Check if the DataFrame has been successfully loaded
-                if not self.is_df_none():
-                    # If loaded successfully, update other attributes as well
-                    self.set_columns()
-                    self.set_dimensions()
-                    self.set_duplicates()
-                    self.set_missing()
-                    self.set_numeric()
-                    self.set_text()
-                    self.set_table()
-            except Exception as e:
-                # Handle any potential errors when loading the CSV file
-                print(f"Error loading CSV file: {str(e)}")
-
-        
-
     def is_df_none(self):
         """
         --------------------
@@ -229,7 +175,6 @@ class Dataset:
             #doubt
             self.n_missing = self.df.isnull().sum().sum() 
 
-        
 
     def set_numeric(self):
         """
@@ -249,7 +194,9 @@ class Dataset:
         -> None
 
         """
-        
+        if not self.is_df_none():
+            numeric_columns = self.df.select_dtypes(include=['number'])
+            self.n_num_cols = numeric_columns.shape[1]
 
     def set_text(self):
         """
@@ -269,6 +216,9 @@ class Dataset:
         -> None
 
         """
+        if not self.is_df_none():
+            text_columns = self.df.select_dtypes(include=['object', 'string'])
+            self.n_text_cols = text_columns.shape[1]
         
 
     def get_head(self, n=5):
@@ -289,6 +239,10 @@ class Dataset:
         -> (Pandas.DataFrame): First rows of dataframe
 
         """
+        if not self.is_df_none():
+            return self.df.head(n)
+        else:
+            return pd.DataFrame()
         
 
     def get_tail(self, n=5):
@@ -309,6 +263,10 @@ class Dataset:
         -> (Pandas.DataFrame): Last rows of dataframe
 
         """
+        if not self.is_df_none():
+            return self.df.tail(n)
+        else:
+            return pd.DataFrame()
         
 
     def get_sample(self, n=5):
@@ -329,6 +287,10 @@ class Dataset:
         -> (Pandas.DataFrame): Sampled dataframe
 
         """
+        if not self.is_df_none():
+            return self.df.sample(n)
+        else:
+            return pd.DataFrame()
         
 
 
@@ -351,6 +313,15 @@ class Dataset:
 
         """
 
+        if not self.is_df_none():
+            data_types = self.df.dtypes
+            memory_usage = self.df.memory_usage(deep=True) #for more accurate estimate
+            self.table = pd.DataFrame({
+                'Column Name': data_types.index,
+                'Data Type': data_types.values,
+                'Memory Usage': memory_usage.values
+            })
+
 
     def get_summary(self):
         """
@@ -365,3 +336,25 @@ class Dataset:
         -> (pd.DataFrame): Formatted dataframe to be displayed on the Streamlit app
 
         """
+
+        summary_data = {
+            'Description': [
+                'Number of Rows',
+                'Number of Columns',
+                'Number of Duplicates',
+                'Number of Missing Values',
+                'Number of Numeric Columns',
+                'Number of Text Columns',
+            ],
+            'Value': [
+                self.n_rows,
+                self.n_cols,
+                self.n_duplicates,
+                self.n_missing,
+                self.n_num_cols,
+                self.n_text_cols,
+            ]
+        }
+        summary_df = pd.DataFrame(summary_data)
+        
+        return summary_df
