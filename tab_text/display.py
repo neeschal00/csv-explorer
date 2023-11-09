@@ -32,19 +32,21 @@ def display_tab_text_content(file_path=None, df=None):
     text_column.find_text_cols()
 
     # Display select box for text columns
-    selected_column = st.sidebar.selectbox('Select Text Column', text_column.cols_list)
+    selected_column = st.selectbox('Select Text Column', text_column.cols_list)
 
-    # Call set_data method with selected column
-    text_column.set_data(selected_column)
+    if selected_column:
+        # Call set_data method with selected column
+        text_column.set_data(selected_column)
 
-    # Display Expander container with results
-    with st.expander('Text Column Summary'):
-        # Display summary table
-        st.table(text_column.get_summary())
 
-        # Display histogram using altair_chart
-        st.altair_chart(text_column.barchart, use_container_width=True)
+        # Display Expander container with results
+        with st.expander('Text Column Summary'):
+            # Display summary table
+            st.table(text_column.get_summary())
 
-        # Display frequent values
-        st.write('Most frequent values:')
-        st.write(text_column.frequent)
+            # Display histogram using altair_chart
+            st.altair_chart(text_column.barchart, use_container_width=True)
+
+            # Display frequent values
+            st.write('Most frequent values:')
+            st.write(text_column.frequent)

@@ -83,7 +83,13 @@ class DateColumn:
                 text_cols = self.df.select_dtypes(include=['object']).columns.tolist()
                 potential_date_cols = []
 
-                # You can add your own logic to identify text columns that represent dates here
+                # Add your logic to identify text columns that represent dates
+                for col in text_cols:
+                    try:
+                        pd.to_datetime(self.df[col], errors='raise')
+                        potential_date_cols.append(col)
+                    except (ValueError, TypeError):
+                        pass  # Ignore columns that cannot be converted to datetime
 
                 self.cols_list = potential_date_cols
         
@@ -163,9 +169,11 @@ class DateColumn:
         """
         if self.serie is not None:
             try:
-                self.serie = pd.read_csv(self.serie)
-            except UnicodeDecodeError:
-                self.serie = pd.read_csv(self.file_path,encoding = "ISO-8859-1")
+                # Attempt to convert the series to datetime using the 'infer_datetime_format' option
+                self.serie = pd.to_datetime(self.serie, errors='coerce', infer_datetime_format=True)
+            except (ValueError, TypeError):
+                # Handle the case where conversion fails
+                print("Error converting the series to datetime.")
         else:
             # Handle the case where the series is empty or None
             print("Series is empty or None. Use 'set_data' to specify the column for conversion.")
@@ -372,7 +380,7 @@ class DateColumn:
         """
         if self.serie is not None and self.serie.dtype == 'datetime64[ns]':
             # Get the current date
-            current_date = datetime.now()
+            current_date = datetime.datetime.now()
 
             # Calculate the number of times dates fall in the future
             future_count = (self.serie > current_date).sum()
@@ -550,6 +558,7 @@ class DateColumn:
                 )
                 summary_df = pd.concat([summary_df, pd.Series(frequent_rows, name='Value')], ignore_index=True)
 
+            summary_df = summary_df.astype(str)
             return summary_df
         else:
             # Handle the case where the series is empty or None

@@ -95,7 +95,20 @@ class TextColumn:
         """
         if col_name in self.cols_list:
             self.serie = self.df[col_name]
-        
+            
+            self.convert_serie_to_text()
+            self.set_unique()
+            self.set_missing()
+            self.set_empty()
+            self.set_mode()
+            self.set_whitespace()
+            self.set_lowercase()
+            self.set_uppercase()
+            self.set_alphabet()
+            self.set_digit()
+            self.set_barchart()
+            self.set_frequent()
+
 
     def convert_serie_to_text(self):
         """
@@ -354,11 +367,16 @@ class TextColumn:
         -> None
 
         """
+        value_counts_df = self.serie.value_counts().reset_index()
+        value_counts_df.columns = ['value', 'count']
         if not self.is_serie_none():
-            chart = alt.Chart(self.df).mark_bar().encode(
-                alt.X('value:N', title='Value'),
-                alt.Y('count()', title='Count')
-            ).properties(title=f'Barchart for {self.serie.name}')
+            chart = alt.Chart(value_counts_df).mark_bar().encode(
+                alt.X("value" + ':N', title="value"),
+                alt.Y('count():Q', title='Count'),
+                tooltip=['value', 'count']
+
+            )
+            
             self.barchart = chart
 
         
@@ -417,4 +435,8 @@ class TextColumn:
                         self.n_upper, self.n_alpha, self.n_digit]
             }
             summary_df = pd.DataFrame(summary_data)
+            summary_df = summary_df.astype(str)
             return summary_df
+        else:
+            print("Series is empty or None. Use 'set_data' to specify the column for analysis.")
+            return pd.DataFrame(columns=['Description', 'Value'])

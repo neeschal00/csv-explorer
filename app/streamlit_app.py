@@ -65,8 +65,8 @@ if uploaded_file is not None:
         display_tab_df_content(file_path=st.session_state.file_path)
     with tab_num:
         display_tab_num_content(file_path=st.session_state.file_path,df=st.session_state["df"])
-    # with tab_text:
-    #     display_tab_text_content(st.session_state.file_path,df=st.session_state["df"])
+    with tab_text:
+        display_tab_text_content(st.session_state.file_path,df=st.session_state["df"])
     with tab_date:
         
         display_tab_date_content(st.session_state.file_path,df=st.session_state["df"])
