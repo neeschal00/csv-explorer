@@ -65,7 +65,10 @@ class TextColumn:
 
         """
         if self.df is None and self.file_path is not None:
-            self.df = pd.read_csv(self.file_path)
+            try:
+                self.df = pd.read_csv(self.file_path)
+            except UnicodeDecodeError:
+                self.df = pd.read_csv(self.file_path,encoding = "ISO-8859-1")
         if self.df is not None:
             self.cols_list = [col for col in self.df.columns if self.df[col].dtype == 'object']
         

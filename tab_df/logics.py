@@ -342,12 +342,10 @@ class Dataset:
 
             # Check data types
             data_types = self.df.dtypes
-            print(data_types)
-            print("length of arr is :"+ str(len(data_types)))
+            
             mem_usage = self.df.memory_usage(deep=True)
             mem_usage = mem_usage[mem_usage.index.isin(data_types.index)]
-            print(mem_usage)
-            print("length of arr is :"+ str(len(mem_usage)))
+            
             # Create the table DataFrame
             self.table = pd.DataFrame({
                 'Column Name': data_types.index,
@@ -355,7 +353,6 @@ class Dataset:
                 'Memory Usage': mem_usage.values
             })
 
-            print(self.table)
 
     def get_summary(self):
         """

@@ -57,14 +57,18 @@ if uploaded_file is not None:
 
     tab_df, tab_num, tab_text, tab_date = st.tabs(["DataFrame", "Numeric Serie", "Text Serie", "Datetime Serie"])
     st.session_state.file_path = file_path
+    try:
+        st.session_state["df"] = pd.read_csv(file_path)
+    except UnicodeDecodeError:
+        st.session_state["df"] = pd.read_csv(file_path,encoding = "ISO-8859-1")
     with tab_df:
         display_tab_df_content(file_path=st.session_state.file_path)
     with tab_num:
-        # st.session_state.dataset = {'df': pd.read_csv(st.session_state.file_path)}
-        display_tab_num_content(file_path=st.session_state.file_path,df=st.session_state.dataset.df)
+        
+        display_tab_num_content(file_path=st.session_state.file_path,df=st.session_state["df"])
     with tab_text:
-        # st.session_state.dataset = {'df': pd.read_csv(st.session_state.file_path)}
-        display_tab_text_content(st.session_state.file_path,df=st.session_state.dataset.df)
+        
+        display_tab_text_content(st.session_state.file_path,df=st.session_state["df"])
     with tab_date:
-        # st.session_state.dataset = {'df': pd.read_csv(st.session_state.file_path)}
-        display_tab_date_content(st.session_state.file_path,df=st.session_state.dataset.df)
+        
+        display_tab_date_content(st.session_state.file_path,df=st.session_state["df"])

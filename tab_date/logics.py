@@ -66,7 +66,10 @@ class DateColumn:
         """
         if self.df is None and self.file_path:
             # Load the CSV file as a Pandas DataFrame
-            self.df = pd.read_csv(self.file_path)
+            try:
+                self.df = pd.read_csv(self.file_path)
+            except UnicodeDecodeError:
+                self.df = pd.read_csv(self.file_path,encoding = "ISO-8859-1")
 
         if self.df is not None:
             # Find columns with datetime data type
@@ -160,11 +163,9 @@ class DateColumn:
         """
         if self.serie is not None:
             try:
-                # Convert the series to datetime data type
-                self.serie = pd.to_datetime(self.serie)
-            except Exception as e:
-                # Handle any potential conversion errors
-                print(f"Error converting the series to datetime: {str(e)}")
+                self.serie = pd.read_csv(self.serie)
+            except UnicodeDecodeError:
+                self.serie = pd.read_csv(self.file_path,encoding = "ISO-8859-1")
         else:
             # Handle the case where the series is empty or None
             print("Series is empty or None. Use 'set_data' to specify the column for conversion.")
