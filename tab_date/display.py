@@ -27,4 +27,29 @@ def display_tab_date_content(file_path=None, df=None):
     -> None
 
     """
-    
+    # Instantiate DateColumn class and save it into Streamlit session state
+    date_column_instance = DateColumn(file_path=file_path, df=df)
+    st.session_state.date_column_instance = date_column_instance
+
+    # Find datetime columns
+    date_column_instance.find_date_cols()
+
+    # Display select box with datetime columns
+    selected_column = st.selectbox("Select a datetime column:", date_column_instance.cols_list)
+
+    if selected_column:
+        # Set data for the selected datetime column
+        date_column_instance.set_data(selected_column)
+
+        # Display Expander container
+        with st.expander("Date Column Summary"):
+            # Display results of get_summary as a Streamlit Table
+            st.table(date_column_instance.get_summary())
+
+            # Display histogram using Streamlit.altair_chart()
+            st.altair_chart(date_column_instance.barchart, use_container_width=True)
+
+            # Display results of frequent using Streamlit.write
+            st.write("Most frequent values:")
+            st.write(date_column_instance.frequent)
+
