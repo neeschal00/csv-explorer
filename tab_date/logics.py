@@ -552,11 +552,11 @@ class DateColumn:
             })
 
             # Add a row for each frequent value
-            if not self.frequent.empty:
-                frequent_rows = self.frequent[['occurrence', 'value']].apply(
-                    lambda x: f"{x['value']} ({x['occurrence']} occurrences)", axis=1
-                )
-                summary_df = pd.concat([summary_df, pd.Series(frequent_rows, name='Value')], ignore_index=True)
+            # if not self.frequent.empty:
+            #     frequent_rows = self.frequent[['occurrence', 'value']].apply(
+            #         lambda x: f"{x['value']} ({x['occurrence']} occurrences)", axis=1
+            #     )
+            #     summary_df = pd.concat([summary_df, pd.Series(frequent_rows, name='Value')], ignore_index=True)
 
             summary_df = summary_df.astype(str)
             return summary_df
