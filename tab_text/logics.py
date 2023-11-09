@@ -64,6 +64,10 @@ class TextColumn:
         -> None
 
         """
+        if self.df is None and self.file_path is not None:
+            self.df = pd.read_csv(self.file_path)
+        if self.df is not None:
+            self.cols_list = [col for col in self.df.columns if self.df[col].dtype == 'object']
         
 
     def set_data(self, col_name):
@@ -86,6 +90,8 @@ class TextColumn:
         --------------------
         -> None
         """
+        if col_name in self.cols_list:
+            self.serie = self.df[col_name]
         
 
     def convert_serie_to_text(self):
@@ -106,6 +112,8 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            self.serie = self.serie.astype(str)
         
 
     def is_serie_none(self):
@@ -126,7 +134,7 @@ class TextColumn:
         -> (bool): Flag stating if the serie is empty or not
 
         """
-        
+        return self.serie is None or self.serie.empty
 
     def set_unique(self):
         """
@@ -146,6 +154,8 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            self.n_unique = len(self.serie.unique())
         
 
     def set_missing(self):
@@ -166,6 +176,8 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            self.n_missing = self.serie.isnull().sum()
         
 
     def set_empty(self):
@@ -186,6 +198,8 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            self.n_empty = (self.serie == '').sum()
         
 
     def set_mode(self):
@@ -206,6 +220,8 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            self.n_mode = self.serie.mode().iloc[0] if not self.serie.mode().empty else None
         
 
     def set_whitespace(self):
@@ -226,6 +242,8 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            self.n_space = self.serie.str.isspace().sum()
         
 
     def set_lowercase(self):
@@ -246,7 +264,8 @@ class TextColumn:
         -> None
 
         """
-        
+        if not self.is_serie_none():
+            self.n_lower = self.serie.str.islower().sum()
 
     def set_uppercase(self):
         """
@@ -266,6 +285,8 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            self.n_upper = self.serie.str.isupper().sum()
         
     
     def set_alphabet(self):
@@ -286,6 +307,8 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            self.n_alpha = self.serie.str.isalpha().sum()
         
 
     def set_digit(self):
@@ -306,6 +329,8 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            self.n_digit = self.serie.str.isdigit().sum()
         
 
     def set_barchart(self):  
@@ -326,6 +351,12 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            chart = alt.Chart(self.df).mark_bar().encode(
+                alt.X('value:N', title='Value'),
+                alt.Y('count()', title='Count')
+            ).properties(title=f'Barchart for {self.serie.name}')
+            self.barchart = chart
         
       
     def set_frequent(self, end=20):
@@ -347,6 +378,11 @@ class TextColumn:
         -> None
 
         """
+        if not self.is_serie_none():
+            value_counts = self.serie.value_counts().head(end).reset_index()
+            value_counts.columns = ['value', 'occurrence']
+            value_counts['percentage'] = (value_counts['occurrence'] / len(self.serie)) * 100
+            self.frequent = value_counts
         
 
     def get_summary(self):
@@ -367,4 +403,14 @@ class TextColumn:
         -> (pd.DataFrame): Formatted dataframe to be displayed on the Streamlit app
 
         """
-        
+        if not self.is_serie_none():
+            summary_data = {
+                'Description': ['Number of Unique Values', 'Number of Missing Values', 'Number of Empty Values',
+                                'Mode', 'Number of Whitespace Values', 'Number of Lowercase Values',
+                                'Number of Uppercase Values', 'Number of Alphabetical Values',
+                                'Number of Digit Values'],
+                'Value': [self.n_unique, self.n_missing, self.n_empty, self.n_mode, self.n_space, self.n_lower,
+                        self.n_upper, self.n_alpha, self.n_digit]
+            }
+            summary_df = pd.DataFrame(summary_data)
+            return summary_df
