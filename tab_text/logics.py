@@ -360,6 +360,7 @@ class TextColumn:
                 alt.Y('count()', title='Count')
             ).properties(title=f'Barchart for {self.serie.name}')
             self.barchart = chart
+
         
       
     def set_frequent(self, end=20):
