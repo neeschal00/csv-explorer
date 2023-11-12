@@ -1,52 +1,31 @@
 import streamlit as st
-
 from tab_num.logics import NumericColumn
 
+
+#display logic for tab_num
 def display_tab_num_content(file_path=None, df=None):
-    """
-    --------------------
-    Description
-    --------------------
-    -> display_tab_num_content (function): Function that will instantiate tab_num.logics.NumericColumn class, save it into Streamlit session state and call its tab_num.logics.NumericColumn.find_num_cols() method in order to find all numeric columns.
-    Then it will display a Streamlit select box with the list of numeric columns found.
-    Once the user select a numeric column from the select box, it will call the tab_num.logics.NumericColumn.set_data() method in order to compute all the information to be displayed.
-    Then it will display a Streamlit Expander container with the following contents:
-    - the results of tab_num.logics.NumericColumn.get_summary() as a Streamlit Table
-    - the graph from tab_num.logics.NumericColumn.histogram using Streamlit.altair_chart()
-    - the results of tab_num.logics.NumericColumn.frequent using Streamlit.write
- 
-    --------------------
-    Parameters
-    --------------------
-    -> file_path (str): File path to uploaded CSV file (optional)
-    -> df (pd.DataFrame): Loaded dataframe (optional)
-
-    --------------------
-    Returns
-    --------------------
-    -> None
-
-    """
+    
     numeric_col = NumericColumn(file_path=file_path, df=df)
+    try:
+        numeric_col.find_num_cols()
+    except Exception as e:
+        st.error("Unable to parse CSV file are you sure you are using CSV format file")
+        return
 
-    # Call the find_num_cols method
-    numeric_col.find_num_cols()
-
-    # Create a Streamlit select box with the list of numeric columns found
     selected_col = st.selectbox("Select a numeric column", numeric_col.cols_list)
 
+
+
     if selected_col:
-        # Call the set_data method to compute information for the selected column
+        
         numeric_col.set_data(selected_col)
+        
 
-        # Create an expander container to display the computed information
         with st.expander("Numeric Column Information"):
-            # Display the summary data as a Streamlit Table
+            
             st.table(numeric_col.get_summary())
-
-            # Display the histogram using Streamlit's altair_chart
+            
             st.altair_chart(numeric_col.histogram, use_container_width=True)
 
-            # Display the frequent values using Streamlit's write
             st.write("Frequent Values:")
             st.write(numeric_col.frequent)

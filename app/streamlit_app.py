@@ -60,7 +60,12 @@ if uploaded_file is not None:
     try:
         st.session_state["df"] = pd.read_csv(file_path)
     except UnicodeDecodeError:
-        st.session_state["df"] = pd.read_csv(file_path,encoding = "ISO-8859-1")
+        try:
+            st.session_state["df"] = pd.read_csv(file_path,encoding = "ISO-8859-1")
+        except Exception as e:
+            print(e)
+            # st.error("Unable to pass CSV file are you sure you are using CSV format file")
+
     with tab_df:
         display_tab_df_content(file_path=st.session_state.file_path)
     with tab_num:
@@ -68,5 +73,4 @@ if uploaded_file is not None:
     with tab_text:
         display_tab_text_content(st.session_state.file_path,df=st.session_state["df"])
     with tab_date:
-        
         display_tab_date_content(st.session_state.file_path,df=st.session_state["df"])
